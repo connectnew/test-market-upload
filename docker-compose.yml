@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+
+  php:
+    build:
+      context: docker/php
+    image: php:7.3-fpm
+    container_name: market_upload_xlsx_php
+    links:
+      - db
+    depends_on:
+      - db
+    environment:
+      XDEBUG_CONFIG: "remote_host=host.docker.internal"
+      PHP_IDE_CONFIG: "serverName=Docker"
+    volumes:
+      - .:/www
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+    networks:
+      mynet:
+        ipv4_address: 172.15.0.3
+
+  nginx:
+    depends_on:
+      - php
+    image: nginx:latest
+    container_name: market_upload_xlsx_nginx
+    working_dir: /www
+    ports:
+      - 8004:80
+    volumes:
+      - .:/www
+      - ./docker/nginx:/etc/nginx/conf.d
+    networks:
+      mynet:
+        ipv4_address: 172.15.0.4
+
+  db:
+    image: mysql:8
+    container_name: market_upload_xlsx_db
+    volumes:
+      - ./docker/mysql/data:/var/lib/mysql
+      - ./docker/mysql/init-dump:/docker-entrypoint-initdb.d
+      - ./docker/mysql/conf.d:/etc/mysql/conf.d
+    ports:
+      - 33064:3306
+    environment:
+      MYSQL_DATABASE: market
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 1234567
+      MYSQL_ROOT_PASSWORD: 1234567
+    networks:
+      mynet:
+        ipv4_address: 172.15.0.2
+
+networks:
+  mynet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.15.0.0/24
