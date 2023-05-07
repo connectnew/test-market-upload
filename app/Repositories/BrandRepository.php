@@ -6,9 +6,11 @@ use App\Models\Brand;
 
 class BrandRepository
 {
+    const INDEX_BRAND_NAME = 3;
+
     public static function saveImport(array $row): Brand
     {
-        $name = trim($row[3]);
+        $name = trim($row[self::INDEX_BRAND_NAME]);
 
         $query = Brand::where('name', $name);
 

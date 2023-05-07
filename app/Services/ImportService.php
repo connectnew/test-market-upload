@@ -11,15 +11,17 @@ use Exception;
 
 class ImportService
 {
-    public function chunk(Request $request, &$strings, &$xlrows): array
+    public function parse(int $start, int $end, string $folder): array
     {
+        $strings = simplexml_load_file($folder . '/xl/sharedStrings.xml');
+        $sheet   = simplexml_load_file($folder . '/xl/worksheets/sheet1.xml');
+
+        $xlrows = $sheet->sheetData->row;
+
         $result = [
             'rows' => 0,
             'rowErrors' => [],
         ];
-
-        $start = (int) $request->start;
-        $end = (int) $request->end;
 
         for ($current = $start; $current <= $end; $current++) {
             if (isset($xlrows[$current])) {
